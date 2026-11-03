@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Work Experience</title>
+  <meta name="description" content="Brian Meng's work experience.">
+  <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+
+  <nav class="site-nav">
+    <a class="home-link" href="index.html">Brian Meng</a>
+    <div class="nav-links">
+      <a href="about.html">About</a>
+      <a href="projects.html">Projects</a>
+      <a href="work.html" class="active">Work Exp</a>
+      <a href="arts.html">Arts</a>
+    </div>
+  </nav>
+
+  <main>
+
+    <header class="page-head">
+      <h1>Work Experience</h1>
+    </header>
+
+    <section>
+      <ul class="roles">
+
+        <li class="reveal">
+          <span class="role-date">May – Aug 2026</span>
+          <div>
+            <div class="role-title">Software Engineering Intern</div>
+            <div class="role-org">Lunar Energy</div>
+            <ul class="role-points">
+              <li>Enabled real-time consumption forecasts for previously skipped cold-start EV charging sessions by building a Python charging-duration fallback in Gridshare's AWS Lambda pipeline.</li>
+              <li>Increased detected EV charging events by ~50% in production by reprocessing detection windows to catch multiple charging events per window, recovering events the pipeline previously missed.</li>
+              <li>Improved battery-state estimates by adding an MAE threshold rejecting poor curve fits, cutting error variance by 25% and enabling more accurate charge/discharge and grid decisions in cost optimization.</li>
+            </ul>
+          </div>
+        </li>
+
+      </ul>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <a href="https://github.com/bmeng5o6" aria-label="GitHub" title="GitHub">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+    </a>
+    <a href="[linkedin url]" aria-label="LinkedIn" title="LinkedIn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+    </a>
+    <a href="mailto:bmeng@sas.upenn.edu" aria-label="Email" title="Email">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+    </a>
+  </footer>
+
+</body>
+</html>

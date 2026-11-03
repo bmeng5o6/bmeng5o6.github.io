@@ -1,0 +1,520 @@
+/* ------------------------------------------------------------------
+   Warm paper background, one accent color used everywhere.
+   Change --accent (and anything else) right here.
+------------------------------------------------------------------- */
+
+:root {
+  --bg: #f7f2e9;          /* warm paper */
+  --surface: #fffdf8;     /* card background */
+  --text: #2b2620;
+  --muted: #7a7267;
+  --line: #e3dbcd;
+  --accent: #A337CC;      /* one color, committed */
+
+  --font: Charter, Georgia, "Times New Roman", serif;
+  --mono: ui-monospace, "SF Mono", Menlo, monospace;
+
+  --width: 44rem;
+}
+
+* {
+  margin: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 17px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+main {
+  max-width: var(--width);
+  margin: 0 auto;
+  padding: 3.5rem 1.5rem 5rem;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+/* ---- nav ------------------------------------------------------- */
+
+.site-nav {
+  max-width: var(--width);
+  margin: 0 auto;
+  padding: 1.75rem 1.5rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.home-link {
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.nav-links {
+  display: flex;
+  gap: 1.5rem;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+}
+
+.nav-links a {
+  color: var(--muted);
+  text-decoration: none;
+  padding-bottom: 2px;
+  border-bottom: 2px solid transparent;
+  transition: color 120ms ease, border-color 120ms ease;
+}
+
+.nav-links a:hover {
+  color: var(--text);
+}
+
+.nav-links a.active {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
+
+/* ---- headers ---------------------------------------------------- */
+
+.hero {
+  margin: 3.5rem 0 5rem;
+}
+
+.page-head {
+  margin: 3rem 0 3.5rem;
+}
+
+h1 {
+  font-size: 2.6rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin-bottom: 1.25rem;
+}
+
+.page-head h1 {
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.name {
+  color: #892CAB;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 6px;
+  text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.intro {
+  max-width: 36rem;
+}
+
+.intro + .intro {
+  margin-top: 1rem;
+}
+
+/* ---- sections ---------------------------------------------------- */
+
+section {
+  margin-bottom: 4.5rem;
+}
+
+section:last-child {
+  margin-bottom: 0;
+}
+
+h2 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* little accent dash before each heading */
+h2::before {
+  content: "";
+  width: 1.5rem;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+/* variant: same heading, no accent dash */
+h2.plain::before {
+  display: none;
+}
+
+.section-note {
+  color: var(--muted);
+  font-size: 0.95rem;
+  margin: -0.75rem 0 1.25rem;
+}
+
+/* ---- project cards ----------------------------------------------- */
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  gap: 1.25rem;
+}
+
+.card {
+  display: block;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 1.5rem;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent);
+  box-shadow: 4px 4px 0 color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+.card-arrow {
+  display: inline-block;
+  color: var(--accent);
+  opacity: 0;
+  transform: translate(-4px, 4px);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.card:hover .card-arrow {
+  opacity: 1;
+  transform: translate(0, 0);
+}
+
+.card code {
+  font-family: var(--mono);
+  font-size: 0.8em;
+}
+
+.card-num {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--accent);
+}
+
+.card h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0.4rem 0 0.5rem;
+}
+
+.card p {
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+.card-meta {
+  display: block;
+  margin-top: 1rem;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--accent);
+}
+
+.more-link {
+  margin-top: 1.5rem;
+}
+
+/* ---- now grid ----------------------------------------------------- */
+
+.now-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 1.25rem;
+}
+
+.now-label {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+}
+
+.now-item p {
+  margin-top: 0.35rem;
+  font-size: 0.95rem;
+}
+
+/* ---- lists (experiments, likes, stack) ----------------------------- */
+
+.list {
+  list-style: none;
+  padding: 0;
+}
+
+.list li {
+  padding: 0.45rem 0;
+  padding-left: 1.25rem;
+  position: relative;
+}
+
+.list li::before {
+  content: "—";
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+}
+
+.list-desc {
+  color: var(--muted);
+}
+
+/* ---- writing list --------------------------------------------------- */
+
+.posts {
+  list-style: none;
+  padding: 0;
+}
+
+.posts li {
+  display: flex;
+  gap: 1.5rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.posts li:first-child {
+  border-top: 1px solid var(--line);
+}
+
+.post-date {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--muted);
+  white-space: nowrap;
+  padding-top: 0.3rem;
+}
+
+.post-blurb {
+  color: var(--muted);
+  font-size: 0.92rem;
+  margin-top: 0.2rem;
+}
+
+/* ---- work experience ------------------------------------------------- */
+
+.roles {
+  list-style: none;
+  padding: 0;
+}
+
+.roles li {
+  display: flex;
+  gap: 1.75rem;
+  padding: 1.75rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.roles li:first-child {
+  border-top: 1px solid var(--line);
+}
+
+.role-date {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--muted);
+  white-space: nowrap;
+  padding-top: 0.35rem;
+  min-width: 8rem;
+}
+
+.role-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.role-org {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--accent);
+  margin-top: 0.15rem;
+}
+
+.role-points {
+  list-style: none;
+  padding: 0;
+  margin-top: 0.75rem;
+}
+
+.role-points li {
+  display: block;
+  border: none;
+  padding: 0.3rem 0 0.3rem 1.25rem;
+  position: relative;
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
+.role-points li::before {
+  content: "—";
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+}
+
+/* ---- links ----------------------------------------------------------- */
+
+a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+  text-decoration-color: color-mix(in srgb, var(--accent) 60%, transparent);
+  transition: color 120ms ease, text-decoration-color 120ms ease;
+}
+
+a:hover {
+  color: var(--accent);
+  text-decoration-color: var(--accent);
+}
+
+p + p {
+  margin-top: 1rem;
+}
+
+/* ---- footer ----------------------------------------------------------- */
+
+.site-footer {
+  max-width: var(--width);
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 3.5rem;
+  display: flex;
+  justify-content: center;
+  gap: 1.75rem;
+}
+
+.site-footer a {
+  color: var(--muted);
+  text-decoration: none;
+  display: inline-flex;
+  transition: color 140ms ease, transform 140ms ease;
+}
+
+.site-footer a:hover {
+  color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.site-footer svg {
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
+/* ---- animations ------------------------------------------------------- */
+
+/* page content rises in on load, one block after another */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+main > * {
+  animation: rise 600ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+main > :nth-child(2) { animation-delay: 120ms; }
+main > :nth-child(3) { animation-delay: 240ms; }
+main > :nth-child(n + 4) { animation-delay: 360ms; }
+
+/* underline draws in under the name on the home page */
+@keyframes draw {
+  from { background-size: 0% 3px; }
+  to   { background-size: 100% 3px; }
+}
+
+.name {
+  background: linear-gradient(var(--accent), var(--accent)) left bottom / 100% 3px no-repeat;
+  padding-bottom: 2px;
+  animation: draw 700ms 500ms ease-out both;
+}
+
+/* nav underline grows from the left on hover */
+.nav-links a {
+  border-bottom: none;
+  background: linear-gradient(var(--accent), var(--accent)) left bottom / 0% 2px no-repeat;
+  transition: color 120ms ease, background-size 220ms ease;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+  background-size: 100% 2px;
+}
+
+/* accent dash before headings stretches on section hover */
+h2::before {
+  transition: width 250ms ease;
+}
+
+section:hover > h2::before {
+  width: 2.25rem;
+}
+
+/* scroll reveal (script.js adds .in) */
+.js .reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 500ms ease, transform 500ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.js .reveal.in {
+  opacity: 1;
+  transform: none;
+}
+
+.js .card.reveal.in:hover {
+  transform: translateY(-4px);
+  transition-delay: 0ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .js .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---- small screens ---------------------------------------------------- */
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 2rem;
+  }
+
+  .hero {
+    margin-top: 2.5rem;
+  }
+
+  .posts li,
+  .roles li {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}

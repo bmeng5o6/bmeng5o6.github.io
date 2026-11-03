@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Projects</title>
+  <meta name="description" content="Things Brian Meng has built.">
+  <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+
+  <nav class="site-nav">
+    <a class="home-link" href="index.html">Brian Meng</a>
+    <div class="nav-links">
+      <a href="about.html">About</a>
+      <a href="projects.html" class="active">Projects</a>
+      <a href="work.html">Work Exp</a>
+      <a href="arts.html">Arts</a>
+    </div>
+  </nav>
+
+  <main>
+
+    <header class="page-head">
+      <h1>Projects</h1>
+    </header>
+
+    <section>
+      <div class="cards">
+
+        <a class="card reveal" href="https://github.com/bmeng5o6/distributed-job-scheduler" target="_blank" rel="noopener">
+          <span class="card-num">01</span>
+          <h3>Distributed Job Scheduler <span class="card-arrow" aria-hidden="true">↗</span></h3>
+          <p>A job scheduler where many worker processes pull work from a shared Postgres queue. Workers claim jobs with <code>FOR UPDATE SKIP LOCKED</code>, so Postgres handles mutual exclusion with no separate coordination layer. Heartbeats detect dead workers, epochs reject writes from stalled ones, and failed jobs retry with exponential backoff before being dead-lettered.</p>
+          <span class="card-meta">Go · PostgreSQL</span>
+        </a>
+
+        <a class="card reveal" href="https://github.com/bmeng5o6/distributed-kv-store" target="_blank" rel="noopener">
+          <span class="card-num">02</span>
+          <h3>Distributed Key-Value Store <span class="card-arrow" aria-hidden="true">↗</span></h3>
+          <p>A key-value store that spreads keys across nodes with a consistent hash ring and virtual nodes. Each shard has a leader that replicates to followers, a write-ahead log keeps data durable across crashes, and gossip-based failure detection routes requests to replicas when a node goes down.</p>
+          <span class="card-meta">Go · AWS EC2 · Docker</span>
+        </a>
+
+        <a class="card reveal" href="https://github.com/bmeng5o6/career-at-penn" target="_blank" rel="noopener">
+          <span class="card-num">03</span>
+          <h3>Career@Penn <span class="card-arrow" aria-hidden="true">↗</span></h3>
+          <p>A web app for Penn students to explore internship and post-grad career data by school and major: employer and pay data, post-grad outcomes from 2017–2024, and thousands of past internship placements. Built with a six-person Penn Spark team that I led.</p>
+          <span class="card-meta">Next.js · TypeScript · Supabase</span>
+        </a>
+
+      </div>
+    </section>
+
+    <section id="other">
+      <h2>Other projects</h2>
+      <ul class="list">
+        <li class="reveal">
+          <a href="https://github.com/bmeng5o6/RoomMate" target="_blank" rel="noopener">RoomMate</a>
+          <span class="list-desc">— a swipe-based app for matching college roommates, with real-time chat (Next.js, Supabase)</span>
+        </li>
+        <li class="reveal">
+          <a href="https://github.com/bmeng5o6/calendar-sync" target="_blank" rel="noopener">CalendarSync</a>
+          <span class="list-desc">— combines friends' calendars to find free time that works for everyone (FastAPI, React)</span>
+        </li>
+        <li class="reveal">
+          <a href="https://github.com/bmeng5o6/upstage-website" target="_blank" rel="noopener">Upstage website</a>
+          <span class="list-desc">— show, ticketing, and audition management for Upstage A Cappella (Next.js, Supabase)</span>
+        </li>
+        <li class="reveal">
+          <a href="https://github.com/bmeng5o6/go-url-shortener" target="_blank" rel="noopener">URL Shortener</a>
+          <span class="list-desc">— a small concurrent URL shortener (Go)</span>
+        </li>
+      </ul>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <a href="https://github.com/bmeng5o6" aria-label="GitHub" title="GitHub">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+    </a>
+    <a href="[linkedin url]" aria-label="LinkedIn" title="LinkedIn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+    </a>
+    <a href="mailto:bmeng@sas.upenn.edu" aria-label="Email" title="Email">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+    </a>
+  </footer>
+
+</body>
+</html>

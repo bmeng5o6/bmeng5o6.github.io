@@ -38,6 +38,7 @@
   const $ = (sel, root = document) => root.querySelector(sel);
   const body = document.body;
   const mqReduce = matchMedia('(prefers-reduced-motion: reduce)');
+  const mqMobile = matchMedia('(max-width: 760px), (max-aspect-ratio: 4/5)');   // keep in sync with styles.css
   let reduce = mqReduce.matches;
 
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -339,21 +340,34 @@
 
   function layout() {
     const W = innerWidth, H = innerHeight;
+    const mobile = mqMobile.matches;
+    body.classList.toggle('is-mobile', mobile);
 
-    // Planet: pushed into the bottom-right corner, about a third showing.
-    const R = Math.min(H * 0.56, W * 0.42);
-    const cx = W + R * 0.18;
-    const cy = H * 0.8;
-
-    // Focus point (left tip of the orbit) sits up and to the left of the planet.
-    const tip = { x: W * 0.56, y: H * 0.4 };
+    let R, cx, cy, tip, base;
+    if (!mobile) {
+      // Desktop: planet pushed into the bottom-right corner, about a third showing;
+      // the focus point (left tip of the orbit) sits up and to the left of it.
+      R = Math.min(H * 0.56, W * 0.42);
+      cx = W + R * 0.18;
+      cy = H * 0.8;
+      tip = { x: W * 0.56, y: H * 0.4 };
+      base = clamp(H * 0.165, 96, 176);      // box size; the rock fills ~75% of it
+    } else {
+      // Phone / portrait: intro on top, planet rising from the bottom-right like a horizon,
+      // focused asteroid in the open space between them.
+      const introBottom = intro.getBoundingClientRect().bottom;
+      base = clamp(W * 0.26, 76, 120);
+      R = Math.min(W * 0.8, H * 0.42);
+      cx = W * 0.95;
+      cy = H + R * 0.22;
+      tip = { x: W * 0.34, y: Math.max(H * 0.56, introBottom + base * 0.75 + 24) };
+    }
     const dx = cx - tip.x, dy = cy - tip.y;
     const a = Math.hypot(dx, dy);
     const b = a * CFG.tilt;
     const phi = Math.atan2(dy, dx);
-    const base = clamp(H * 0.165, 96, 176);  // box size; the rock fills ~75% of it
 
-    G = { W, H, R, cx, cy, a, b, phi, cos: Math.cos(phi), sin: Math.sin(phi), tip, base };
+    G = { W, H, R, cx, cy, a, b, phi, cos: Math.cos(phi), sin: Math.sin(phi), tip, base, mobile };
 
     const d = 2 * R;
     Object.assign(planet.style, { width: d + 'px', height: d + 'px', left: cx - R + 'px', top: cy - R + 'px' });
@@ -378,12 +392,14 @@
       });
     });
 
-    focusLabel.style.left = tip.x - base * 0.5 + 'px';
+    // Label sits left of the focused rock on desktop, right of it on phones (left edge is too close)
+    focusLabel.style.left = (mobile ? tip.x + base * 0.45 : tip.x - base * 0.5) + 'px';
     focusLabel.style.top = tip.y + 'px';
 
     // When the panel opens, pan the scene so the focused asteroid clears the panel.
+    // (On phones the panel is a full-width sheet, so no pan.)
     const panelW = Math.min(560, W * 0.46);
-    const panX = Math.max(0, panelW + 300 - tip.x);   // leave room for the focus label
+    const panX = mobile ? 0 : Math.max(0, panelW + 300 - tip.x);   // leave room for the focus label
     system.style.setProperty('--pan-x', panX + 'px');
 
     resizeStars(W, H);
@@ -691,6 +707,20 @@
     }
   }, { passive: true });
 
+  // Swipe left/right to turn the orbit on touch screens (panel scrolls normally)
+  let touch0 = null;
+  addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1 || e.target.closest?.('.panel')) { touch0 = null; return; }
+    touch0 = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }, { passive: true });
+  addEventListener('touchend', (e) => {
+    if (!touch0) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - touch0.x, dy = t.clientY - touch0.y;
+    touch0 = null;
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.2) go(dx < 0 ? 1 : -1);
+  }, { passive: true });
+
   // ── Boot ────────────────────────────────────────────────────
   let resizeRaf = 0;
   addEventListener('resize', () => {
@@ -778,6 +808,7 @@
   }
 
   layout();
+  document.fonts?.ready.then(layout);   // re-measure once the font has loaded (intro height can change)
   onTargetChange();
   syncFromHash({ instant: true });
   runHello();

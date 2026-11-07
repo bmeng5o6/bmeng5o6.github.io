@@ -406,4 +406,50 @@ html.is-reveal .intro > :nth-child(5) { animation-delay: 1.04s; }
   .hello-word.show { animation: hello-fade var(--dur, 0.9s) ease forwards !important; }
 }
 
-/* Mobile layout comes next — desktop first. */
+/* ── Phones / portrait (keep the query in sync with mqMobile in main.js) ── */
+html, body { overscroll-behavior: none; }          /* no rubber-band / pull-to-refresh fighting the swipe */
+
+@media (max-width: 760px), (max-aspect-ratio: 4/5) {
+  body { height: 100dvh; }
+  .backdrop, .system { touch-action: none; }      /* horizontal swipes turn the orbit */
+
+  /* Intro stacks at the top */
+  .intro {
+    top: max(28px, env(safe-area-inset-top));
+    left: 20px; right: 20px;
+    width: auto;
+    transform: none;
+  }
+  .intro h1 { font-size: clamp(32px, 10vw, 46px); }
+  .role { margin-top: 10px; font-size: 15px; }
+  .pitch { margin-top: 10px; font-size: 13.5px; line-height: 1.5; max-width: 40ch; }
+  .links { margin-top: 18px; gap: 8px; }
+  .btn { height: 34px; padding: 0 12px; font-size: 13px; }
+  .quicknav { display: none; }                     /* swipe / tap the asteroids instead */
+
+  /* Focus label to the right of the rock */
+  .focus-label { transform: translate(0, -50%); align-items: flex-start; text-align: left; padding: 6px 8px; }
+  .fl-name { font-size: 21px; }
+  .roid-tag { font-size: 10px; }
+
+  /* Panel becomes a full-width sheet that slides up */
+  .panel {
+    top: auto;
+    width: 100%;
+    height: 90dvh;
+    border-right: 0;
+    border-top: 1px solid var(--line-2);
+    transform: translateY(102%);
+    touch-action: pan-y;
+  }
+  .panel-scroll { padding: 52px 22px 28px; }
+  .panel-nav { padding: 12px 22px calc(12px + env(safe-area-inset-bottom)); }
+  #panelTitle { font-size: 32px; }
+  .p-lede { font-size: 15.5px; }
+  .xp-head { flex-direction: column; gap: 2px; }   /* dates drop under the role on narrow screens */
+  .edu { flex-direction: column; gap: 4px; }
+  .contact-email { font-size: 19px; }
+
+  /* Intro words a touch smaller on phones */
+  .hello-word { font-size: clamp(44px, 14vw, 72px); }
+}

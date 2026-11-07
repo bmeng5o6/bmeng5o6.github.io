@@ -15,6 +15,9 @@
     direction: 1,       // 1 = next asteroid comes from behind the planet; -1 = from in front
     sway: 1,            // idle bob/tilt amount (0 = still)
     starDrift: [2, 4, 8], // px/sec drift per star layer (far → near)
+    rockFeather: 0,     // soft fade at asteroid edges, as a fraction of rock size (0 = crisp edge)
+    rockRim: 0.55,      // brightness of the thin rim light around each asteroid (0 = off, 1 = full)
+    rockHalo: 0,        // dark halo around each asteroid that fades what's behind it (fraction of rock size; 0 = off)
     rockRough: 0.09,    // asteroid edge roughness (0 = smooth outline, ~0.15 = very jagged)
     ditherMix: 0.82,    // asteroid dots: 1 = pure 1-bit dots, 0 = smooth shading (planet: DITHER_MIX in planet.js)
   };
@@ -209,9 +212,41 @@
     return m.map((row) => row.map((v) => (v + 0.5) / 64));
   })();
 
+  // Box-blur a mask in place (separable, two passes) — used to feather asteroid edges
+  function blurMask(m, S, r) {
+    const tmp = new Float32Array(S * S), w = 2 * r + 1;
+    for (let y = 0; y < S; y++) {                        // horizontal
+      let acc = 0;
+      for (let x = -r; x <= r; x++) acc += m[y * S + clamp(x, 0, S - 1)];
+      for (let x = 0; x < S; x++) {
+        tmp[y * S + x] = acc / w;
+        acc += m[y * S + Math.min(S - 1, x + r + 1)] - m[y * S + Math.max(0, x - r)];
+      }
+    }
+    for (let x = 0; x < S; x++) {                        // vertical
+      let acc = 0;
+      for (let y = -r; y <= r; y++) acc += tmp[clamp(y, 0, S - 1) * S + x];
+      for (let y = 0; y < S; y++) {
+        m[y * S + x] = acc / w;
+        acc += tmp[Math.min(S - 1, y + r + 1) * S + x] - tmp[Math.max(0, y - r) * S + x];
+      }
+    }
+  }
+
   function ditherRock(g, img, S, COV) {
     const px = img.data;
     const cell = Math.max(1, Math.round(S / 150));      // ~1.5 CSS px dots
+    const rimW = Math.max(1, Math.round(S / 160));      // rim-light thickness, ~1.5 CSS px
+
+    // Feathered edge: blur the silhouette, then fade only inward so the outline stays put.
+    // Keeps a front asteroid from cutting a hard line across the one behind it.
+    const soft = new Float32Array(S * S);
+    for (let i = 0; i < S * S; i++) soft[i] = COV[i] > 0.5 ? 1 : 0;
+    const feather = CFG.rockFeather > 0;
+    if (feather) {
+      const r = Math.max(1, Math.round(S * CFG.rockFeather));
+      blurMask(soft, S, r); blurMask(soft, S, r);        // two box blurs ≈ smooth gaussian falloff
+    }
     for (let y = 0; y < S; y++) {
       for (let x = 0; x < S; x++) {
         const i = y * S + x, o = i * 4;
@@ -219,9 +254,20 @@
         const lum = (px[o] * 0.299 + px[o + 1] * 0.587 + px[o + 2] * 0.114) / 255;
         const th = BAYER8[Math.floor(y / cell) % 8][Math.floor(x / cell) % 8];
         const tone = Math.min(1, Math.pow(lum, 0.85) * 1.12);
-        const v = tone * (1 - CFG.ditherMix) + (tone > th ? 1 : 0) * CFG.ditherMix;
+        let v = tone * (1 - CFG.ditherMix) + (tone > th ? 1 : 0) * CFG.ditherMix;
+        // Rim light: a thin edge lit by the planet behind, so the silhouette reads against the planet
+        if (CFG.rockRim > 0) {
+          const e = rimW;
+          const out = (dx, dy) => { const xx = x + dx, yy = y + dy; return xx < 0 || yy < 0 || xx >= S || yy >= S || COV[yy * S + xx] <= 0.5; };
+          if (out(e, 0) || out(-e, 0) || out(0, e) || out(0, -e)) {
+            const nx = (out(e, 0) ? 1 : 0) - (out(-e, 0) ? 1 : 0), ny = (out(0, e) ? 1 : 0) - (out(0, -e) ? 1 : 0);
+            const toPlanet = Math.max(0, (nx * 0.85 + ny * 0.5) / (Math.hypot(nx, ny) || 1));   // planet is down-right
+            v = Math.max(v, CFG.rockRim * (0.45 + 0.55 * toPlanet));
+          }
+        }
         px[o] = DOT_RGB[0] * v; px[o + 1] = DOT_RGB[1] * v; px[o + 2] = DOT_RGB[2] * v;
-        px[o + 3] = COV[i] > 0.5 ? 255 : 0;
+        const f = feather ? clamp((soft[i] - 0.5) * 2, 0, 1) : soft[i];   // 0 at the outline → 1 inside
+        px[o + 3] = 255 * f * f * (3 - 2 * f);
       }
     }
     g.putImageData(img, 0, 0);
@@ -417,7 +463,10 @@
       rd.el.style.opacity = op.toFixed(3);
       rd.el.style.pointerEvents = op > 0.5 ? '' : 'none';
 
-      const filter = `brightness(${bright.toFixed(2)})`;
+      const halo = Math.round(rd.px * CFG.rockHalo);
+      const filter = halo > 0
+        ? `brightness(${bright.toFixed(2)}) drop-shadow(0 0 ${halo}px rgba(0,0,0,0.92))`
+        : `brightness(${bright.toFixed(2)})`;
       if (filter !== rd.filter) { rd.rock.style.filter = filter; rd.filter = filter; }
 
       // Near side draws over the planet (z 20), far side under it.

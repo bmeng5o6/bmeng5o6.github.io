@@ -8,31 +8,23 @@ window.PORTFOLIO = {
 
   sections: [
     {
-      id: "projects", label: "Projects",
-      size: 1.12, hue: 22, seed: 7, type: "projects",
-      featured: [
-        {
-          title: "Distributed Job Scheduler",
-          desc: "A job scheduler where many worker processes pull work from a shared Postgres queue. Implemented heartbeats to detect dead workers, epochs to reject writes from stalled workers, and exponential backoff to retry jobs if they fail.",
-          stack: ["Go", "PostgreSQL", "Docker"],
-          code: "https://github.com/bmeng5o6/distributed-job-scheduler",
-        },
-        {
-          title: "Distributed Key-Value Store",
-          desc: "A key-value store that distributes keys across nodes on a hash ring with consistent hashing. Each shard has a leader that replicates to followers, a write-ahead log keeps data even with crashes, and a gossip-based failure detection that directs requests to replicas when leaders are unresponsive.",
-          stack: ["Go", "AWS EC2", "Docker"],
-          code: "https://github.com/bmeng5o6/distributed-kv-store",
-        },
-        {
-          title: "Career@Penn",
-          desc: "A web app for Penn students to explore internship and post-grad career data by school and major: employer and pay data, post-grad outcomes from 2017–2024, and thousands of past internship placements. Built with a six-person Penn Spark team that I helped lead.",
-          stack: ["Next.js", "TypeScript", "Supabase"],
-          code: "https://github.com/bmeng5o6/career-at-penn",
-        },
+      id: "about", label: "About", blurb: "Who I am",
+      size: 0.95, hue: 34, seed: 5, type: "about",
+      paragraphs: [
+        "Hi, I'm Brian Meng! I'm a third-year at the University of Pennsylvania studying Computer Science and Mathematical Economics, and I'm interested in software engineering, mathematics, and statistics.",
+        "I'm really interested in backend/full-stack development, machine learning, and low-level design. With projects from fintech to energy, I enjoy working on features or building out ideas from 0 to 1.",
+        "Outside of work, I'm passionate about performing arts and music. I'm involved in theatre and a cappella at Penn.",
       ],
-      other: [
-        // { title: "CalendarSync", desc: "Combines friends' calendars to find free time that works for everyone", stack: "FastAPI, React", code: "https://github.com/bmeng5o6/calendar-sync" },
-        { title: "Upstage Website", desc: "Website, show, ticketing, and audition management for Upstage A Cappella", stack: "Next.js, Supabase", code: "https://github.com/bmeng5o6/upstage-website" },
+      education: {
+        school: "University of Pennsylvania",
+        degree: "B.S.E. Computer Science, Second Major in Mathematical Economics",
+        when: "Expected May 2028",
+      },
+      skills: [
+        { group: "Languages", items: ["Python", "Java", "Go", "TypeScript/JavaScript", "C/C++", "SQL", "R", "OCaml"] },
+        { group: "Frameworks & Libraries", items: ["Next.js", "React", "React Native", "Django", "FastAPI", "Flask", "SQLAlchemy"] },
+        { group: "Cloud & DevOps", items: ["AWS (Lambda, EC2, S3, Redshift, CloudWatch)", "Docker", "Linux/Unix"] },
+        { group: "Databases & Search", items: ["PostgreSQL", "SQLite", "Elasticsearch"]}
       ],
     },
     {
@@ -87,23 +79,31 @@ window.PORTFOLIO = {
       ],
     },
     {
-      id: "about", label: "About", blurb: "Who I am",
-      size: 0.95, hue: 34, seed: 5, type: "about",
-      paragraphs: [
-        "Hi, I'm Brian Meng! I'm a third-year at the University of Pennsylvania studying Computer Science and Mathematical Economics, and I'm interested in software engineering, mathematics, and statistics.",
-        "I'm really interested in backend/full-stack development, machine learning, and low-level design. With projects from fintech to energy, I enjoy working on features or building out ideas from 0 to 1.",
-        "Outside of work, I'm passionate about performing arts and music. I'm involved in theatre and a cappella at Penn.",
+      id: "projects", label: "Projects",
+      size: 1.12, hue: 22, seed: 7, type: "projects",
+      featured: [
+        {
+          title: "Distributed Job Scheduler",
+          desc: "A job scheduler where many worker processes pull work from a shared Postgres queue. Implemented heartbeats to detect dead workers, epochs to reject writes from stalled workers, and exponential backoff to retry jobs if they fail.",
+          stack: ["Go", "PostgreSQL", "Docker"],
+          code: "https://github.com/bmeng5o6/distributed-job-scheduler",
+        },
+        {
+          title: "Distributed Key-Value Store",
+          desc: "A key-value store that distributes keys across nodes on a hash ring with consistent hashing. Each shard has a leader that replicates to followers, a write-ahead log keeps data even with crashes, and a gossip-based failure detection that directs requests to replicas when leaders are unresponsive.",
+          stack: ["Go", "AWS EC2", "Docker"],
+          code: "https://github.com/bmeng5o6/distributed-kv-store",
+        },
+        {
+          title: "Career@Penn",
+          desc: "A web app for Penn students to explore internship and post-grad career data by school and major: employer and pay data, post-grad outcomes from 2017–2024, and thousands of past internship placements. Built with a six-person Penn Spark team that I helped lead.",
+          stack: ["Next.js", "TypeScript", "Supabase"],
+          code: "https://github.com/bmeng5o6/career-at-penn",
+        },
       ],
-      education: {
-        school: "University of Pennsylvania",
-        degree: "B.S.E. Computer Science, Second Major in Mathematical Economics",
-        when: "Expected May 2028",
-      },
-      skills: [
-        { group: "Languages", items: ["Python", "Java", "Go", "TypeScript/JavaScript", "C/C++", "SQL", "R", "OCaml"] },
-        { group: "Frameworks & Libraries", items: ["Next.js", "React", "React Native", "Django", "FastAPI", "Flask", "SQLAlchemy"] },
-        { group: "Cloud & DevOps", items: ["AWS (Lambda, EC2, S3, Redshift, CloudWatch)", "Docker", "Linux/Unix"] },
-        { group: "Databases & Search", items: ["PostgreSQL", "SQLite", "Elasticsearch"]}
+      other: [
+        // { title: "CalendarSync", desc: "Combines friends' calendars to find free time that works for everyone", stack: "FastAPI, React", code: "https://github.com/bmeng5o6/calendar-sync" },
+        { title: "Upstage Website", desc: "Website, show, ticketing, and audition management for Upstage A Cappella", stack: "Next.js, Supabase", code: "https://github.com/bmeng5o6/upstage-website" },
       ],
     },
     {

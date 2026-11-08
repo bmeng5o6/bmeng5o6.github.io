@@ -3,12 +3,12 @@
 
   // ── Tuning knobs ────────────────────────────────────────────
   const CFG = {
-    neighborAngle: 55,  // degrees around the orbit from the focus point to each visible neighbour
+    neighborAngle: 40,  // degrees around the orbit from the focus point to each neighbour (40 keeps them clear of the planet)
     tilt: 0.3,          // orbit minor/major axis ratio — lower = more edge-on
     scaleNear: 0.42,    // extra size when near
     scaleFar: 0.34,     // size reduction when far
     dimNear: 0.4,       // darkening when near — depth reads through size + dimming (no blur, keeps dots crisp)
-    dimFar: 0.6,        // darkening when far (behind the planet)
+    dimFar: 0.68,       // darkening when far (behind the planet)
     ease: 6,            // how snappy the orbit turns (higher = faster)
     entrySpin: 2.5,     // on load, asteroids sweep this many slots around the orbit into place (0 = off)
     entryEase: 1.8,     // how gently that entrance settles (lower = slower)
@@ -16,8 +16,9 @@
     sway: 1,            // idle bob/tilt amount (0 = still)
     starDrift: [2, 4, 8], // px/sec drift per star layer (far → near)
     rockFeather: 0,     // soft fade at asteroid edges, as a fraction of rock size (0 = crisp edge)
-    rockRim: 0.55,      // brightness of the thin rim light around each asteroid (0 = off, 1 = full)
-    rockHalo: 0,        // dark halo around each asteroid that fades what's behind it (fraction of rock size; 0 = off)
+    rockRim: 0.7,       // brightness of the thin rim light around each asteroid (0 = off, 1 = full)
+    rockHalo: 0.06,     // soft shadow around each asteroid that fades what's behind it (fraction of rock size; 0 = off)
+    rockHaloStrength: 0.65, // how dark that shadow is (0–1)
     rockRough: 0.09,    // asteroid edge roughness (0 = smooth outline, ~0.15 = very jagged)
     ditherMix: 0.82,    // asteroid dots: 1 = pure 1-bit dots, 0 = smooth shading (planet: DITHER_MIX in planet.js)
   };
@@ -276,7 +277,6 @@
 
   // ── Build asteroids ─────────────────────────────────────────
   const system = $('#system');
-  const orbitHoles = $('#orbitHoles');
   const roids = SECTIONS.map((sec, i) => {
     const el = document.createElement('button');
     el.type = 'button';
@@ -289,17 +289,10 @@
       else goTo(i);
     });
 
-    const tag = document.createElement('span');
-    tag.className = 'roid-tag';
-    tag.textContent = sec.label;
-    tag.setAttribute('aria-hidden', 'true');
 
-    system.append(el, tag);
+    system.append(el);
 
-    const hole = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    hole.setAttribute('fill', '#000');
-    orbitHoles.appendChild(hole);
-    return { el, hole, rock: el.firstElementChild, canvas: el.querySelector('canvas'), seed: sec.seed ?? i + 1, tag, size: sec.size || 1, filter: '', z: -1 };
+    return { el, rock: el.firstElementChild, canvas: el.querySelector('canvas'), seed: sec.seed ?? i + 1, size: sec.size || 1, filter: '', z: -1 };
   });
 
   // ── Orbit state ─────────────────────────────────────────────
@@ -338,20 +331,44 @@
 
   let planetT = 0, planetLast = 0;
 
+  // Width of the longest section name in the focus label (desktop size), for collision checks
+  const measureCtx = document.createElement('canvas').getContext('2d');
+  function widestLabelPx(fontPx) {
+    measureCtx.font = `700 ${fontPx}px "Space Mono", ui-monospace, monospace`;
+    return Math.max(...SECTIONS.map((s) => measureCtx.measureText(s.label).width)) + 28;   // + padding
+  }
+
+  let compact = false;
+
   function layout() {
     const W = innerWidth, H = innerHeight;
-    const mobile = mqMobile.matches;
+
+    // Desktop geometry first. The intro column ends at gutter + min(420px, 34vw) (see .intro in CSS);
+    // the focus label sits left of the focused rock. Push the orbit right until the label clears the
+    // intro — and if that would shove it too far into the planet, use the stacked (phone) layout.
+    const gutter = clamp(W * 0.06, 24, 104);
+    const introRight = gutter + Math.min(420, W * 0.34);
+    const deskBase = clamp(H * 0.165, 96, 176);
+    const needTipX = introRight + 20 + widestLabelPx(26) + deskBase * 0.5;
+    const mobile = mqMobile.matches || needTipX > W * 0.74;   // stacked layout below ~880px wide
     body.classList.toggle('is-mobile', mobile);
+    // Safety net: if the window is too short or narrow for the scene to fit (e.g. a phone held
+    // sideways), hide the planet + asteroids and show a plain, scrollable intro + section list.
+    compact = H < 520 || W < 320;
+    body.classList.toggle('is-compact', compact);
 
     let R, cx, cy, tip, base;
     if (!mobile) {
       // Desktop: planet pushed into the bottom-right corner, about a third showing;
       // the focus point (left tip of the orbit) sits up and to the left of it.
-      R = Math.min(H * 0.56, W * 0.42);
+      // When the orbit has to slide right to clear the intro, shrink the planet to match,
+      // so the neighbour asteroids still sit in open space instead of on the planet.
+      const push = Math.max(0, needTipX - W * 0.56);
+      R = Math.max(H * 0.3, Math.min(H * 0.56, W * 0.42) - push * 0.9);
       cx = W + R * 0.18;
       cy = H * 0.8;
-      tip = { x: W * 0.56, y: H * 0.4 };
-      base = clamp(H * 0.165, 96, 176);      // box size; the rock fills ~75% of it
+      tip = { x: Math.max(W * 0.56, needTipX), y: H * 0.4 };
+      base = deskBase;                       // box size; the rock fills ~75% of it
     } else {
       // Phone / portrait: intro on top, planet rising from the bottom-right like a horizon,
       // focused asteroid in the open space between them.
@@ -481,26 +498,21 @@
 
       const halo = Math.round(rd.px * CFG.rockHalo);
       const filter = halo > 0
-        ? `brightness(${bright.toFixed(2)}) drop-shadow(0 0 ${halo}px rgba(0,0,0,0.92))`
+        ? `brightness(${bright.toFixed(2)}) drop-shadow(0 0 ${halo}px rgba(0,0,0,${CFG.rockHaloStrength}))`
         : `brightness(${bright.toFixed(2)})`;
       if (filter !== rd.filter) { rd.rock.style.filter = filter; rd.filter = filter; }
 
-      // Near side draws over the planet (z 20), far side under it.
-      const z = p.depth >= 0 ? 21 + Math.round(p.depth * 9) : 19 + Math.round(p.depth * 9);
+      // Layering: back orbit (5) < rocks behind the planet (10–19) < planet + front orbit (20)
+      // < every other rock (25–35). A rock only drops under the planet when it is on the far side
+      // AND actually overlapping the planet's disc; everywhere else it sits on top, and since rocks
+      // are solid it simply hides the dotted line beneath it (no per-frame masking needed).
+      const r = half * scale;
+      const fromPlanet = Math.hypot(p.x - G.cx, p.y - G.cy);
+      // (while the planet is still rising into place, treat every far-side rock as behind it)
+      const behind = p.depth < 0 && (planetRising || fromPlanet < G.R + r);
+      const z = behind ? 15 + Math.round(p.depth * 5) : 30 + Math.round(p.depth * 5);
       if (z !== rd.z) { rd.el.style.zIndex = z; rd.z = z; }
 
-      // Cut a hole in the dotted orbit line around the rock (rock fills ~75% of its box)
-      const holeR = op > 0.02 ? rd.px * scale * 0.4 + 8 : 0;
-      rd.hole.setAttribute('cx', p.x.toFixed(1));
-      rd.hole.setAttribute('cy', (p.y + bob).toFixed(1));
-      rd.hole.setAttribute('r', holeR.toFixed(1));
-
-      // Small label for the neighbours
-      const tagOp = clamp(1 - Math.abs(ak - 1) * 2.2, 0, 1) * op;
-      const r = half * scale;
-      const ty = p.depth >= 0 ? p.y + bob + r + 10 : p.y + bob - r - 24;
-      rd.tag.style.transform = `translate3d(${p.x.toFixed(1)}px,${ty.toFixed(1)}px,0) translateX(-50%)`;
-      rd.tag.style.opacity = tagOp.toFixed(3);
     });
 
     // Focus label fades while the orbit is turning
@@ -511,6 +523,7 @@
 
   let last = performance.now();
   let entryEase = null;               // slower easing used only for the load-in sweep
+  let planetRising = false;           // true during the reveal, while the planet slides into place
   function frame(now) {
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
@@ -518,9 +531,9 @@
     if (Math.abs(target - pos) < 0.0005) pos = target;
     const t = now / 1000;
     drawStars(t, dt);
-    placeRoids(t);
+    if (!compact) placeRoids(t);
     // The planet changes slowly, so ~24fps is plenty and saves GPU
-    if (gasGiant && !reduce && now - planetLast > 42) {
+    if (gasGiant && !compact && !reduce && now - planetLast > (G.mobile ? 83 : 42)) {   // ~12fps on phones, ~24fps desktop
       planetT += Math.min(0.1, (now - planetLast) / 1000);
       planetLast = now;
       gasGiant.render(planetT);
@@ -680,8 +693,12 @@
     if (e.metaKey || e.ctrlKey || e.altKey) return;
     const onControl = e.target.closest?.('button, a, input, textarea');
     switch (e.key) {
-      case 'ArrowRight': case 'ArrowDown': e.preventDefault(); go(1); return;
-      case 'ArrowLeft': case 'ArrowUp': e.preventDefault(); go(-1); return;
+      case 'ArrowRight': case 'ArrowDown':
+        if (compact && !panelOpen) return;          // let the page scroll
+        e.preventDefault(); go(1); return;
+      case 'ArrowLeft': case 'ArrowUp':
+        if (compact && !panelOpen) return;
+        e.preventDefault(); go(-1); return;
       case 'Escape': closePanel(); return;
       case 'Enter': case ' ':
         if (!onControl && !panelOpen) { e.preventDefault(); openPanel(); }
@@ -694,7 +711,7 @@
   // Scroll / trackpad turns the orbit one step at a time (but scrolls the panel normally)
   let wheelAcc = 0, wheelLast = 0, wheelLock = 0;
   addEventListener('wheel', (e) => {
-    if (e.target.closest?.('.panel')) return;
+    if (compact || e.target.closest?.('.panel')) return;
     const now = performance.now();
     if (now - wheelLast > 250) wheelAcc = 0;   // new gesture
     wheelLast = now;
@@ -710,7 +727,7 @@
   // Swipe left/right to turn the orbit on touch screens (panel scrolls normally)
   let touch0 = null;
   addEventListener('touchstart', (e) => {
-    if (e.touches.length !== 1 || e.target.closest?.('.panel')) { touch0 = null; return; }
+    if (compact || e.touches.length !== 1 || e.target.closest?.('.panel')) { touch0 = null; return; }
     touch0 = { x: e.touches[0].clientX, y: e.touches[0].clientY };
   }, { passive: true });
   addEventListener('touchend', (e) => {
@@ -795,6 +812,10 @@
         pos = target - CFG.entrySpin;
         entryEase = CFG.entryEase;
         setTimeout(() => { entryEase = null; }, 3200);
+      }
+      if (!reduce) {
+        planetRising = true;
+        setTimeout(() => { planetRising = false; }, 2400);   // matches the 2.3s planet-rise animation
       }
       setTimeout(() => { root.classList.remove('is-reveal'); overlay.remove(); }, 2900);
     }

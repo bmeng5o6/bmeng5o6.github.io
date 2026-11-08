@@ -20,7 +20,8 @@ uniform vec3  uPole, uDot;          // pole tint, dot colour
 uniform float uCell;     // dither dot size in canvas pixels
 uniform float uSpin;     // rotation speed multiplier
 const float DITHER_MIX = 0.82;  // 1 = pure 1-bit dots, 0 = smooth shading
-const float EDGE_GLOW = 0.22;   // extra brightness on the lit edge (was 0.55 — too bright next to dimmed asteroids)
+const float EDGE_GLOW = 0.22;     // extra brightness on the lit edge
+const float PLANET_GAIN = 1.0;    // overall planet brightness (1 = full)
 
 float hash(vec3 p) {
   p = fract(p * 0.3183099 + 0.1);
@@ -97,7 +98,7 @@ void main() {
   // Ordered dither: tone becomes dot density, with a little smooth tone blended back in
   float L = pow(clamp(dot(lit, vec3(0.299, 0.587, 0.114)), 0.0, 1.0), 1.25);
   float on = step(bayer8(gl_FragCoord.xy / uCell) + 0.02, L * 1.15);         // +0.02 keeps the night side black
-  vec3 outc = uDot * mix(L * 1.15, on, DITHER_MIX);
+  vec3 outc = uDot * mix(L * 1.15, on, DITHER_MIX) * PLANET_GAIN;
 
   gl_FragColor = vec4(outc, 1.0);   // solid disc: hides stars + far-side asteroids behind it
 }`;
@@ -145,7 +146,7 @@ void main() {
     return {
       // Size the canvas to just the visible part of the planet (CSS px), then set uniforms.
       resize({ cx, cy, R, W, H }) {
-        const dpr = Math.min(1.5, window.devicePixelRatio || 1);
+        const dpr = 1 / 1.5;   // one canvas pixel per ~1.5 CSS px dot; CSS scales it up with pixelated edges
         const left = Math.max(0, Math.floor(cx - R - 2));
         const top = Math.max(0, Math.floor(cy - R - 2));
         const right = Math.min(W, Math.ceil(cx + R + 2));
@@ -157,7 +158,7 @@ void main() {
         gl.viewport(0, 0, canvas.width, canvas.height);
         gl.uniform2f(u.uCenter, (cx - left) * dpr, (bottom - cy) * dpr);
         gl.uniform1f(u.uRadius, R * dpr);
-        gl.uniform1f(u.uCell, Math.max(1, Math.round(1.5 * dpr)));   // ~1.5 CSS px dots
+        gl.uniform1f(u.uCell, 1.0);                                   // each canvas pixel is one dot
       },
       render(t) {
         gl.uniform1f(u.uTime, t);

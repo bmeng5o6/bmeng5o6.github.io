@@ -23,19 +23,10 @@
 
 <!-- Planet, orbit, and asteroids. Asteroids are injected by main.js. -->
 <div class="system" id="system">
-    <svg class="orbit orbit-back" aria-hidden="true">
-        <defs>
-            <!-- Holes cut around each asteroid so the dotted line never draws over a rock -->
-            <mask id="orbitMask" maskUnits="userSpaceOnUse" x="-5000" y="-5000" width="20000" height="20000">
-                <rect x="-5000" y="-5000" width="20000" height="20000" fill="#fff"/>
-                <g id="orbitHoles"></g>
-            </mask>
-        </defs>
-        <g mask="url(#orbitMask)"><g id="orbitBackG"><path id="orbitBack"/></g></g>
-    </svg>
+    <svg class="orbit orbit-back" aria-hidden="true"><g id="orbitBackG"><path id="orbitBack"/></g></svg>
     <div class="planet" id="planet" aria-hidden="true"></div>  <!-- fallback if WebGL is unavailable -->
     <canvas class="planet-gl" id="planetGL" aria-hidden="true"></canvas>
-    <svg class="orbit orbit-front" aria-hidden="true"><g mask="url(#orbitMask)"><g id="orbitFrontG"><path id="orbitFront"/></g></g></svg>
+    <svg class="orbit orbit-front" aria-hidden="true"><g id="orbitFrontG"><path id="orbitFront"/></g></svg>
 
     <button type="button" class="focus-label" id="focusLabel">
         <span class="fl-name" id="flName"></span>

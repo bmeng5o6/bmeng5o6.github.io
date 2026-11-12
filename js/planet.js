@@ -41,10 +41,8 @@ float fbm(vec3 p) {
   for (int i = 0; i < 5; i++) { s += a * noise(p); p = p * 2.03 + vec3(1.7, 9.2, 3.1); a *= 0.5; }
   return s;
 }
-// Ordered (Bayer) dither thresholds
-float bayer2(vec2 a) { a = floor(a); return fract(a.x / 2.0 + a.y * a.y * 0.75); }
-float bayer4(vec2 a) { return bayer2(0.5 * a) * 0.25 + bayer2(a); }
-float bayer8(vec2 a) { return bayer4(0.5 * a) * 0.25 + bayer2(a); }
+// Interleaved-gradient-noise dither thresholds: an even grain, no square grid (matches the asteroids)
+float ign(vec2 a) { a = floor(a); return fract(52.9829189 * fract(dot(a, vec2(0.06711056, 0.00583715)))); }
 
 vec3 rotX(vec3 v, float a) { float c = cos(a), s = sin(a); return vec3(v.x, c*v.y - s*v.z, s*v.y + c*v.z); }
 vec3 rotY(vec3 v, float a) { float c = cos(a), s = sin(a); return vec3(c*v.x + s*v.z, v.y, -s*v.x + c*v.z); }
@@ -97,7 +95,7 @@ void main() {
 
   // Ordered dither: tone becomes dot density, with a little smooth tone blended back in
   float L = pow(clamp(dot(lit, vec3(0.299, 0.587, 0.114)), 0.0, 1.0), 1.25);
-  float on = step(bayer8(gl_FragCoord.xy / uCell) + 0.02, L * 1.15);         // +0.02 keeps the night side black
+  float on = step(ign(gl_FragCoord.xy / uCell) + 0.02, L * 1.15);         // +0.02 keeps the night side black
   vec3 outc = uDot * mix(L * 1.15, on, DITHER_MIX) * PLANET_GAIN;
 
   gl_FragColor = vec4(outc, 1.0);   // solid disc: hides stars + far-side asteroids behind it
@@ -146,17 +144,21 @@ void main() {
     return {
       // Size the canvas to just the visible part of the planet (CSS px), then set uniforms.
       resize({ cx, cy, R, W, H }) {
-        const dpr = 1 / 1.5;   // one canvas pixel per ~1.5 CSS px dot; CSS scales it up with pixelated edges
+        // One canvas pixel per ~1.5 CSS px dot, but always a whole number of *device* pixels —
+        // otherwise the pixelated upscale mixes 1px and 2px dots into uneven squares/moiré.
+        const sys = window.devicePixelRatio || 1;
+        const k = Math.max(1, Math.round(1.5 * sys));   // device pixels per dot
+        const dpr = sys / k;                            // canvas pixels per CSS px
         const left = Math.max(0, Math.floor(cx - R - 2));
         const top = Math.max(0, Math.floor(cy - R - 2));
         const right = Math.min(W, Math.ceil(cx + R + 2));
         const bottom = Math.min(H, Math.ceil(cy + R + 2));
-        const w = Math.max(1, right - left), h = Math.max(1, bottom - top);
+        canvas.width = Math.max(1, Math.ceil((right - left) * dpr));
+        canvas.height = Math.max(1, Math.ceil((bottom - top) * dpr));
+        const w = canvas.width / dpr, h = canvas.height / dpr;   // exact multiple of the dot size
         Object.assign(canvas.style, { left: left + 'px', top: top + 'px', width: w + 'px', height: h + 'px' });
-        canvas.width = Math.round(w * dpr);
-        canvas.height = Math.round(h * dpr);
         gl.viewport(0, 0, canvas.width, canvas.height);
-        gl.uniform2f(u.uCenter, (cx - left) * dpr, (bottom - cy) * dpr);
+        gl.uniform2f(u.uCenter, (cx - left) * dpr, (top + h - cy) * dpr);
         gl.uniform1f(u.uRadius, R * dpr);
         gl.uniform1f(u.uCell, 1.0);                                   // each canvas pixel is one dot
       },

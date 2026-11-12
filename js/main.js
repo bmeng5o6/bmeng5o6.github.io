@@ -16,7 +16,7 @@
     sway: 1,            // idle bob/tilt amount (0 = still)
     starDrift: [2, 4, 8], // px/sec drift per star layer (far → near)
     rockFeather: 0,     // soft fade at asteroid edges, as a fraction of rock size (0 = crisp edge)
-    rockRim: 0.7,       // brightness of the thin rim light around each asteroid (0 = off, 1 = full)
+    rockRim: 0,      // brightness of the thin rim light around each asteroid (0 = off, 1 = full)
     rockHalo: 0.06,     // soft shadow around each asteroid that fades what's behind it (fraction of rock size; 0 = off)
     rockHaloStrength: 0.65, // how dark that shadow is (0–1)
     rockRough: 0.09,    // asteroid edge roughness (0 = smooth outline, ~0.15 = very jagged)
@@ -197,23 +197,7 @@
     ditherRock(g, img, S, COV);
   }
 
-  // ── Dither pass for the asteroids (matches the planet shader) ──
-  const BAYER8 = (() => {                 // 8×8 ordered-dither thresholds, 0..1
-    let m = [[0]];
-    for (let n = 1; n < 8; n *= 2) {
-      const next = [];
-      for (let y = 0; y < n * 2; y++) {
-        next.push([]);
-        for (let x = 0; x < n * 2; x++) {
-          const q = [0, 2, 3, 1][(y >= n) * 2 + (x >= n)];
-          next[y].push(4 * m[y % n][x % n] + q);
-        }
-      }
-      m = next;
-    }
-    return m.map((row) => row.map((v) => (v + 0.5) / 64));
-  })();
-
+  // ── Dither pass for the asteroids (dot colour matches the planet shader) ──
   // Box-blur a mask in place (separable, two passes) — used to feather asteroid edges
   function blurMask(m, S, r) {
     const tmp = new Float32Array(S * S), w = 2 * r + 1;
@@ -254,7 +238,11 @@
         const i = y * S + x, o = i * 4;
         if (COV[i] <= 0) continue;
         const lum = (px[o] * 0.299 + px[o + 1] * 0.587 + px[o + 2] * 0.114) / 255;
-        const th = BAYER8[Math.floor(y / cell) % 8][Math.floor(x / cell) % 8];
+        // Interleaved-gradient-noise thresholds: an even, grain-like stipple. (An ordered Bayer
+        // matrix turns the rocks' flat mid-tones into a visible square crosshatch mesh.)
+        const ix = Math.floor(x / cell), iy = Math.floor(y / cell);
+        const ign = (0.06711056 * ix + 0.00583715 * iy) % 1;
+        const th = (52.9829189 * ign) % 1;
         const tone = Math.min(1, Math.pow(lum, 0.85) * 1.12);
         let v = tone * (1 - CFG.ditherMix) + (tone > th ? 1 : 0) * CFG.ditherMix;
         // Rim light: a thin edge lit by the planet behind, so the silhouette reads against the planet
@@ -270,6 +258,21 @@
         px[o] = DOT_RGB[0] * v; px[o + 1] = DOT_RGB[1] * v; px[o + 2] = DOT_RGB[2] * v;
         const f = feather ? clamp((soft[i] - 0.5) * 2, 0, 1) : soft[i];   // 0 at the outline → 1 inside
         px[o + 3] = 255 * f * f * (3 - 2 * f);
+      }
+    }
+
+    // Soft dark halo around the rock, baked into the canvas. (A CSS drop-shadow on a rotating,
+    // filtered layer gets clipped to its box in some browsers and shows up as dark squares.)
+    if (CFG.rockHalo > 0) {
+      const halo = new Float32Array(S * S);
+      for (let i = 0; i < S * S; i++) halo[i] = COV[i] > 0.5 ? 1 : 0;
+      const hr = Math.max(1, Math.round((S * CFG.rockHalo) / (1 + CFG.scaleNear) / 2));
+      blurMask(halo, S, hr); blurMask(halo, S, hr);
+      for (let i = 0; i < S * S; i++) {
+        const o = i * 4;
+        if (px[o + 3] >= 255) continue;
+        const a = Math.min(1, halo[i] * 2) * CFG.rockHaloStrength * 255;   // ×2: full strength at the outline
+        if (a > px[o + 3]) { px[o] = px[o + 1] = px[o + 2] = 0; px[o + 3] = a; }
       }
     }
     g.putImageData(img, 0, 0);
@@ -496,10 +499,7 @@
       rd.el.style.opacity = op.toFixed(3);
       rd.el.style.pointerEvents = op > 0.5 ? '' : 'none';
 
-      const halo = Math.round(rd.px * CFG.rockHalo);
-      const filter = halo > 0
-        ? `brightness(${bright.toFixed(2)}) drop-shadow(0 0 ${halo}px rgba(0,0,0,${CFG.rockHaloStrength}))`
-        : `brightness(${bright.toFixed(2)})`;
+      const filter = `brightness(${bright.toFixed(2)})`;   // halo is baked into the canvas
       if (filter !== rd.filter) { rd.rock.style.filter = filter; rd.filter = filter; }
 
       // Layering: back orbit (5) < rocks behind the planet (10–19) < planet + front orbit (20)

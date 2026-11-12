@@ -6,9 +6,9 @@
 /* ── Tokens ─────────────────────────────────────────────── */
 :root {
   --bg: #000;
-  --text: #c2c0ca;   /* soft off-white: pure white felt too sharp on black */
-  --muted: #9d9bae;
-  --faint: #66647a;
+  --text: #f0eff5;   /* bright off-white */
+  --muted: #c6c4d2;
+  --faint: #8a889e;
   --line: rgba(255, 255, 255, 0.08);
   --line-2: rgba(255, 255, 255, 0.15);
 
@@ -84,11 +84,14 @@ body.has-gl .planet { display: none; }
   -webkit-tap-highlight-color: transparent;
 }
 .roid::before { content: ""; position: absolute; inset: -14px; border-radius: 50%; }
-.roid-rock { width: 100%; height: 100%; will-change: filter; }
+.roid-rock { width: 100%; height: 100%; }
+/* Smooth sampling: rocks are scaled + rotated every frame, and nearest-neighbour sampling of a
+   rotated dither pattern turns the dots into ragged squares. The canvas is already rendered at
+   (or above) on-screen resolution, so smoothing keeps the dots crisp. */
 .roid canvas {
   display: block;
   width: 100%; height: 100%;
-  image-rendering: pixelated;
+  image-rendering: auto;
   transition: filter 0.3s var(--ease-out);
 }
 .roid:hover canvas { filter: brightness(1.3); }   /* no glows: hover is a simple brighten */
